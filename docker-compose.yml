@@ -1,0 +1,56 @@
+version: '2'
+
+services:
+  mysql:
+    container_name: lesson-mysql
+    image: mysql:5.7
+    ports:
+      - 33061:3306
+    restart: always
+    volumes:
+      - ./docker/data/mysql:/var/lib/mysql:delegated,rw
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: localdatabase
+      MYSQL_USER: root
+      MYSQL_PASSWORD: mysql
+    networks:
+      - app
+  php:
+    container_name: php
+    build: docker/php/
+    ports:
+      - 9001:9000
+    restart: always
+    volumes:
+      - ./:/var/www/symfony:cached
+      - /etc/timezone:/etc/timezone:cached
+    networks:
+      - app
+  chat:
+    container_name: chat
+    build: docker/php/
+    ports:
+      - 8000:10000
+    restart: always
+    volumes:
+      - ./:/var/www/symfony:cached
+      - /etc/timezone:/etc/timezone:cached
+    networks:
+      - app
+  nginx:
+    build: docker/nginx/
+    ports:
+      - 8080:80
+    restart: always
+    volumes_from:
+      - php
+    networks:
+      - app
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
